@@ -16,6 +16,7 @@ def createFileList():
     for file in os.listdir(os.getcwd()):
         if ((file != FILE_LIST) and (file != os.path.basename(__file__))):
             fileList.write(file+'\n')
+    fileList.close()
 
 while True:
     print("* Waiting for client...")
@@ -31,7 +32,6 @@ while True:
         exit()
     elif command == 'list':
         createFileList()
-        #sentFlag = serverSocket.sendto()
     elif command == 'get':
         sentFlag = serverSocket.sendto()
     elif command == 'put':
