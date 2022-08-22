@@ -1,22 +1,29 @@
 from socket import *
 import time
+import os
 
 BUFFERED_PACKET_SIZE = 2048
+FILE_LIST = 'fileList.txt'
 
 clientSocket = socket(AF_INET,SOCK_DGRAM)
 serverSocketAddress = ('localhost',8080)
 
 while True:
     clientMessage = input("* Type the message to send to the server\n>>")
-    sentFlag = clientSocket.sendto(clientMessage.encode(),serverSocketAddress)
-    print("* Waiting to receive...")
+    command = clientMessage.split()[0]
+    print("* Waiting for server...")
 
+    print(command)
 
-    data, server = clientSocket.recvfrom(BUFFERED_PACKET_SIZE)
-    serverAnswer = data.decode('utf8')
-
-    if serverAnswer == 'exit':
-        clientSocket.close
+    if command == 'exit' :
+        sentFlag = clientSocket.sendto(command.encode(),serverSocketAddress)
+        clientSocket.close()
         exit()
+    elif command == 'list' :
+        sentFlag = clientSocket.sendto()
+    elif command == 'get' :
+        sentFlag = clientSocket.sendto()
+    elif command == 'put' :
+        sentFlag = clientSocket.sendto()
     else :
-        print(data.decode('utf8'))
+        print("* This request is not recognized, please rety")

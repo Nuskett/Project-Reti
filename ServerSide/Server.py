@@ -1,7 +1,10 @@
+from pydoc import cli
 from socket import *
+import os
 import time
 
 BUFFERED_PACKET_SIZE = 2048
+FILE_LIST = 'fileList.txt'
 
 serverSocket = socket(AF_INET,SOCK_DGRAM)
 serverSocketAddress = ('localhost',8080)
@@ -12,13 +15,17 @@ while True:
     print("* Waiting for client...")
     data, address = serverSocket.recvfrom(BUFFERED_PACKET_SIZE)
 
-    print("* Received %s bytes from %s" % (len(data),address))
     clientRequest = data.decode('utf8')
     print("Request was (%s)" % clientRequest)
-    
-    if clientRequest == 'exit':
-        sentFlag = serverSocket.sendto(data,address)
+    command = clientRequest.split()[0]
+
+
+    if command == 'exit' :
         serverSocket.close
         exit()
-    else :
-        sentFlag = serverSocket.sendto("* This request is not recognized, please rety".encode(),address)
+    elif command == 'list' :
+        sentFlag = serverSocket.sendto()
+    elif command == 'get' :
+        sentFlag = serverSocket.sendto()
+    elif command == 'put' :
+        sentFlag = serverSocket.sendto()
