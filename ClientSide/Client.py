@@ -15,15 +15,15 @@ while True:
 
     print(command)
 
-    if command == 'exit' :
+    if command == 'exit':
         sentFlag = clientSocket.sendto(command.encode(),serverSocketAddress)
         clientSocket.close()
         exit()
-    elif command == 'list' :
+    elif command == 'list':
+        sentFlag = clientSocket.sendto(command.encode(),serverSocketAddress)
+    elif command == 'get':
         sentFlag = clientSocket.sendto()
-    elif command == 'get' :
-        sentFlag = clientSocket.sendto()
-    elif command == 'put' :
+    elif command == 'put':
         sentFlag = clientSocket.sendto()
     else :
         print("* This request is not recognized, please rety")
