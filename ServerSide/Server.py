@@ -29,6 +29,36 @@ def calculateSha256(filename):
     hashResult = hashlib.sha256(fileBytes)
     return hashResult.hexdigest()
 
+def receiveDatafromClient():
+    flag, address = serverSocket.recvfrom(BUFFERED_PACKET_SIZE)
+    if (flag.decode('utf8') == 'abort'):
+        print("* File not found\n* Tranfer failed")
+        return
+    hash, address = serverSocket.recvfrom(BUFFERED_PACKET_SIZE)
+    filenameToDecode, address = serverSocket.recvfrom(BUFFERED_PACKET_SIZE)
+    print("* File found, now downloading...")
+    filename = filenameToDecode.decode('utf8')
+    receivedFile = open(filename,'wb')
+    packet, address = serverSocket.recvfrom(BUFFERED_PACKET_SIZE)
+    try:
+        while (packet):
+            receivedFile.write(packet)
+            serverSocket.settimeout(1)
+            packet, address = serverSocket.recvfrom(BUFFERED_PACKET_SIZE)
+    except timeout:
+        receivedFile.close()
+    serverSocket.settimeout(None)
+    if (checkFileExistence(filename)):
+        print("* File downloaded, now checking integrity...")
+    else:
+        print("* Download failed, please retry")
+        return
+    if (calculateSha256(filename) == str(hash.decode('utf8'))):
+        print("* File successfully downloaded")
+    else:
+        print("* File corrupted, deleting corrupted file. Please try again")
+        os.remove(filename)
+
 def sendFileToClient(filename,address):
     print("* Confirming file existance")
     if checkFileExistence(filename):
@@ -71,4 +101,4 @@ while True:
     elif command == 'get':
         sendFileToClient(clientRequest.split()[1],address)
     elif command == 'put':
-        sentFlag = serverSocket.sendto()
+        receiveDatafromClient()

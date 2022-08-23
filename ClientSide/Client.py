@@ -20,6 +20,29 @@ def calculateSha256(filename):
     hashResult = hashlib.sha256(fileBytes)
     return hashResult.hexdigest()
 
+def sendData(filename):
+    print("* Confirming file existance")
+    if checkFileExistence(filename):
+        clientSocket.sendto('continue'.encode('utf8'),serverSocketAddress)
+        print("* File found")
+    else:
+        clientSocket.sendto('abort'.encode('utf8'),serverSocketAddress)
+        print("* File not found")
+        print("* Transfer aborted")
+        return
+    clientSocket.sendto(str(calculateSha256(filename)).encode('utf8') ,serverSocketAddress)
+    print("* Sent the hashing of the file")
+    clientSocket.sendto(filename.encode('utf8'),serverSocketAddress)
+    print("* Sent filename")
+    fileToSend = open(filename,'rb')
+    packet = fileToSend.read(BUFFERED_PACKET_SIZE)
+    print("* Sending the file...")
+    while (packet):
+        clientSocket.sendto(packet,serverSocketAddress)
+        packet = fileToSend.read(BUFFERED_PACKET_SIZE)
+    fileToSend.close()
+    print("* File sent")
+
 def receiveData():
     flag, address = clientSocket.recvfrom(BUFFERED_PACKET_SIZE)
     if (flag.decode('utf8') == 'abort'):
@@ -72,6 +95,7 @@ while True:
         sentFlag = clientSocket.sendto(clientMessage.encode('utf8'),serverSocketAddress)
         receiveData()
     elif command == 'put':
-        sentFlag = clientSocket.sendto()
+        sentFlag = clientSocket.sendto(clientMessage.encode('utf8'),serverSocketAddress)
+        sendData(clientMessage.split()[1])
     else :
         print("* This request is not recognized, please rety")
