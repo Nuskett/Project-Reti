@@ -23,11 +23,13 @@ def checkFileExistence(filename):
         return True
     return False
 
+def calculateSha256(filename):
+    file = open(filename,'rb')
+    fileBytes = file.read()
+    hashResult = hashlib.sha256(fileBytes)
+    return hashResult.hexdigest()
 
-#bisogna fare il controllo di hashing
-#aggiungi display status per update del server
 def sendFileToClient(filename,address):
-    #prima controllo se esiste e mando il risultato come messaggio
     print("* Confirming file existance")
     if checkFileExistence(filename):
         serverSocket.sendto('continue'.encode('utf8'),address)
@@ -37,7 +39,8 @@ def sendFileToClient(filename,address):
         print("* File not found")
         print("* Transfer aborted")
         return
-    #mando il nome del file per crearlo
+    serverSocket.sendto(str(calculateSha256(filename)).encode('utf8') ,address)
+    print("* Sent the hashing of the file")
     serverSocket.sendto(filename.encode('utf8'),address)
     print("* Sent filename")
     fileToSend = open(filename,'rb')
@@ -49,8 +52,6 @@ def sendFileToClient(filename,address):
     fileToSend.close()
     print("* File sent")
 
-
-
 while True:
     print("* Waiting for client...")
     data, address = serverSocket.recvfrom(BUFFERED_PACKET_SIZE)
@@ -58,7 +59,6 @@ while True:
     clientRequest = data.decode('utf8')
     print("* Request was (%s)" % clientRequest)
     command = clientRequest.split()[0]
-
 
     if command == 'exit':
         print("* Closing the server")
@@ -69,6 +69,6 @@ while True:
         sendFileToClient(FILE_LIST,address)
         os.remove(FILE_LIST)
     elif command == 'get':
-        sentFlag = serverSocket.sendto()
+        sendFileToClient(clientRequest.split()[1],address)
     elif command == 'put':
         sentFlag = serverSocket.sendto()
