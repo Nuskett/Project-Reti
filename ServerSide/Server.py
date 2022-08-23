@@ -1,8 +1,7 @@
-from pydoc import cli
 from socket import *
-import os
-from struct import pack
+import hashlib
 import time
+import os
 
 BUFFERED_PACKET_SIZE = 2048
 FILE_LIST = 'fileList.txt'
@@ -29,19 +28,26 @@ def checkFileExistence(filename):
 #aggiungi display status per update del server
 def sendFileToClient(filename,address):
     #prima controllo se esiste e mando il risultato come messaggio
+    print("* Confirming file existance")
     if checkFileExistence(filename):
         serverSocket.sendto('continue'.encode('utf8'),address)
+        print("* File found")
     else:
         serverSocket.sendto('abort'.encode('utf8'),address)
+        print("* File not found")
+        print("* Transfer aborted")
         return
     #mando il nome del file per crearlo
     serverSocket.sendto(filename.encode('utf8'),address)
+    print("* Sent filename")
     fileToSend = open(filename,'rb')
     packet = fileToSend.read(BUFFERED_PACKET_SIZE)
+    print("* Sending the file...")
     while (packet):
         serverSocket.sendto(packet,address)
         packet = fileToSend.read(BUFFERED_PACKET_SIZE)
     fileToSend.close()
+    print("* File sent")
 
 
 
@@ -50,17 +56,18 @@ while True:
     data, address = serverSocket.recvfrom(BUFFERED_PACKET_SIZE)
 
     clientRequest = data.decode('utf8')
-    print("Request was (%s)" % clientRequest)
+    print("* Request was (%s)" % clientRequest)
     command = clientRequest.split()[0]
 
 
     if command == 'exit':
-        print("Closing the server")
+        print("* Closing the server")
         serverSocket.close
         exit()
     elif command == 'list':
         createFileList()
         sendFileToClient(FILE_LIST,address)
+        os.remove(FILE_LIST)
     elif command == 'get':
         sentFlag = serverSocket.sendto()
     elif command == 'put':
