@@ -52,11 +52,14 @@ def receiveDatafromClient():
         print("* File downloaded, now checking integrity...")
     else:
         print("* Download failed, please retry")
+        serverSocket.sendto('failed'.encode('utf8'),address)
         return
     if (calculateSha256(filename) == str(hash.decode('utf8'))):
         print("* File successfully downloaded")
+        serverSocket.sendto('success'.encode('utf8'),address)
     else:
         print("* File corrupted, deleting corrupted file. Please try again")
+        serverSocket.sendto('failed'.encode('utf8'),address)
         os.remove(filename)
 
 def sendFileToClient(filename,address):

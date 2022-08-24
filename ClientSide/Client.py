@@ -42,6 +42,11 @@ def sendData(filename):
         packet = fileToSend.read(BUFFERED_PACKET_SIZE)
     fileToSend.close()
     print("* File sent")
+    status, address = clientSocket.recvfrom(BUFFERED_PACKET_SIZE)
+    if (status.decode('utf8') == 'success'):
+        print("* File successfully uploaded")
+    else:
+        print("* File upload failed, please retry")
 
 def receiveData():
     flag, address = clientSocket.recvfrom(BUFFERED_PACKET_SIZE)
